@@ -500,7 +500,7 @@ static int cmd_skill_search(int argc, char **argv)
 static void print_config(const char *label, const char *ns, const char *key,
                          const char *build_val, bool mask)
 {
-    char nvs_val[128] = {0};
+    char nvs_val[384] = {0};
     const char *source = "not set";
     const char *display = "(empty)";
 

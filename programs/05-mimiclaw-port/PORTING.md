@@ -26,6 +26,8 @@ documented in `../../HARDWARE.md`:
   does not provide the old built-in `json` component name used upstream.
 - Guards `WIFI_REASON_ASSOC_EXPIRE`, which is not present in this ESP-IDF
   v6.0.1 target header set.
+- Enlarges the CLI config display buffer so long OpenAI project keys can be
+  read back from NVS and shown masked.
 
 ## Build Probe
 
