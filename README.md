@@ -7,6 +7,7 @@ Notes and future code for the connected ESP32 board.
 Each program lives in its own folder under `programs/`.
 
 - `programs/01-minimal-log` - smallest ESP-IDF app for checking build, flash, and UART logging.
+- `programs/02-sd-card-test` - SPI SD/TF card mount test using the likely board pins.
 
 ## ESP-IDF Setup
 
