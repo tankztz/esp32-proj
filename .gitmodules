@@ -2,3 +2,6 @@
 	path = references/mcube-1-esp32-dev-board-mpy-code
 	url = https://github.com/tankztz/mcube-1-esp32-dev-board-mpy-code.git
 	branch = main
+[submodule "references/M5-ProductExampleCodes"]
+	path = references/M5-ProductExampleCodes
+	url = https://github.com/m5stack/M5-ProductExampleCodes.git

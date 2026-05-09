@@ -9,6 +9,7 @@
 #include "driver/spi_master.h"
 #include "esp_check.h"
 #include "esp_event.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
@@ -43,6 +44,8 @@
 #define COLOR_DARK    0x18c3
 #define COLOR_PANEL   0x4208
 #define COLOR_ORANGE  0xfd20
+#define COLOR_PURPLE  0x780f
+#define COLOR_GRAY    0x8410
 
 static const char *TAG = "touch_ui_shell";
 static spi_device_handle_t s_lcd;
@@ -59,10 +62,15 @@ typedef struct {
 
 typedef enum {
     SCREEN_HOME,
-    SCREEN_APPS,
+    SCREEN_IMAGE,
+    SCREEN_TIMER,
+    SCREEN_SLEEP,
     SCREEN_SETTINGS,
     SCREEN_WIFI,
+    SCREEN_IMU,
 } app_screen_t;
+
+static esp_err_t draw_header(const char *right);
 
 static esp_err_t lcd_send(const uint8_t *data, int len, bool is_data)
 {
@@ -339,11 +347,60 @@ static esp_err_t touch_read(touch_state_t *state)
 
 static esp_err_t draw_tile(int x, int y, int w, int h, uint16_t color, const char *title, const char *sub)
 {
+    int title_scale = (w < 70) ? 2 : 3;
+    int title_x = x + ((w < 70) ? 8 : 12);
+    int title_y = y + ((w < 70) ? 12 : 16);
+    int sub_x = x + ((w < 70) ? 8 : 12);
+    int sub_y = y + ((w < 70) ? 36 : 48);
+
     ESP_RETURN_ON_ERROR(lcd_fill_rect(x, y, w, h, COLOR_WHITE), TAG, "tile border failed");
     ESP_RETURN_ON_ERROR(lcd_fill_rect(x + 2, y + 2, w - 4, h - 4, color), TAG, "tile fill failed");
-    ESP_RETURN_ON_ERROR(draw_text(x + 12, y + 16, title, COLOR_WHITE, color, 3), TAG, "tile title failed");
-    ESP_RETURN_ON_ERROR(draw_text(x + 12, y + 48, sub, COLOR_WHITE, color, 1), TAG, "tile sub failed");
+    ESP_RETURN_ON_ERROR(draw_text(title_x, title_y, title, COLOR_WHITE, color, title_scale), TAG, "tile title failed");
+    ESP_RETURN_ON_ERROR(draw_text(sub_x, sub_y, sub, COLOR_WHITE, color, 1), TAG, "tile sub failed");
     return ESP_OK;
+}
+
+static esp_err_t draw_status_row(int y, const char *name, bool ok)
+{
+    uint16_t state_color = ok ? COLOR_GREEN : COLOR_RED;
+
+    ESP_RETURN_ON_ERROR(draw_text(34, y, name, COLOR_WHITE, COLOR_DARK, 2), TAG, "status name failed");
+    ESP_RETURN_ON_ERROR(lcd_fill_rect(230, y - 2, 58, 22, state_color), TAG, "status pill failed");
+    ESP_RETURN_ON_ERROR(draw_text(244, y + 2, ok ? "OK" : "FAIL", COLOR_BLACK, state_color, 1), TAG, "status state failed");
+    return ESP_OK;
+}
+
+static esp_err_t draw_boot_check_screen(void)
+{
+    ESP_RETURN_ON_ERROR(lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, COLOR_DARK), TAG, "boot clear failed");
+    ESP_RETURN_ON_ERROR(draw_header("SYS INIT"), TAG, "boot header failed");
+    ESP_RETURN_ON_ERROR(draw_text(28, 52, "FACTORY CHECK", COLOR_YELLOW, COLOR_DARK, 3), TAG, "boot title failed");
+    ESP_RETURN_ON_ERROR(draw_status_row(104, "LCD", true), TAG, "lcd status failed");
+    ESP_RETURN_ON_ERROR(draw_status_row(132, "TOUCH", false), TAG, "touch pending failed");
+    ESP_RETURN_ON_ERROR(draw_status_row(160, "PSRAM", false), TAG, "psram pending failed");
+    ESP_RETURN_ON_ERROR(draw_status_row(188, "WIFI", false), TAG, "wifi pending failed");
+    return ESP_OK;
+}
+
+static bool check_psram_probe(void)
+{
+    uint8_t *test = heap_caps_malloc(4096, MALLOC_CAP_SPIRAM);
+    if (test == NULL) {
+        return false;
+    }
+
+    for (int i = 0; i < 4096; ++i) {
+        test[i] = (uint8_t)(i ^ 0xa5);
+    }
+    for (int i = 0; i < 4096; ++i) {
+        if (test[i] != (uint8_t)(i ^ 0xa5)) {
+            heap_caps_free(test);
+            return false;
+        }
+    }
+
+    heap_caps_free(test);
+    return true;
 }
 
 static esp_err_t draw_header(const char *right)
@@ -359,13 +416,14 @@ static esp_err_t draw_ui_shell(void)
     ESP_RETURN_ON_ERROR(lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, COLOR_DARK), TAG, "clear failed");
     ESP_RETURN_ON_ERROR(draw_header("MAIN MENU"), TAG, "header failed");
 
-    ESP_RETURN_ON_ERROR(draw_tile(12, 52, 92, 86, COLOR_BLUE, "APPS", "MAIN"), TAG, "apps tile failed");
-    ESP_RETURN_ON_ERROR(draw_tile(114, 52, 92, 86, COLOR_PANEL, "SET", "TIME"), TAG, "set tile failed");
-    ESP_RETURN_ON_ERROR(draw_tile(216, 52, 92, 86, COLOR_ORANGE, "WIFI", "SCAN"), TAG, "wifi tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(72, 54, 176, 70, COLOR_PANEL, "IMU", "MOTION DEMO"), TAG, "imu tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(20, 148, 44, 56, COLOR_BLUE, "SD", "IMG"), TAG, "sd tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(79, 148, 44, 56, COLOR_ORANGE, "WI", "SCAN"), TAG, "wifi tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(138, 148, 44, 56, COLOR_PURPLE, "TM", "RUN"), TAG, "timer tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(197, 148, 44, 56, COLOR_GRAY, "SL", "OFF"), TAG, "sleep tile failed");
+    ESP_RETURN_ON_ERROR(draw_tile(256, 148, 44, 56, COLOR_GREEN, "ST", "SET"), TAG, "setting tile failed");
 
-    ESP_RETURN_ON_ERROR(lcd_fill_rect(12, 154, 296, 74, COLOR_BLACK), TAG, "status box failed");
-    ESP_RETURN_ON_ERROR(draw_text(24, 166, "SELECT A TILE", COLOR_GREEN, COLOR_BLACK, 2), TAG, "hint failed");
-    ESP_RETURN_ON_ERROR(draw_text(24, 202, "WIFI RUNS REAL SCAN", COLOR_WHITE, COLOR_BLACK, 1), TAG, "hint2 failed");
+    ESP_RETURN_ON_ERROR(draw_text(18, 216, "M5 CORE2 FACTORY FLOW REFERENCE", COLOR_CYAN, COLOR_DARK, 1), TAG, "hint failed");
     return ESP_OK;
 }
 
@@ -383,24 +441,6 @@ static esp_err_t draw_placeholder_screen(const char *title, const char *line1, c
 static bool hit_rect(const touch_state_t *touch, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
     return touch->x >= x && touch->x < x + w && touch->y >= y && touch->y < y + h;
-}
-
-static esp_err_t draw_touch_status(const touch_state_t *state, int count)
-{
-    char line[40];
-
-    ESP_RETURN_ON_ERROR(lcd_fill_rect(104, 166, 190, 48, COLOR_BLACK), TAG, "clear touch text failed");
-    if (state->pressed) {
-        snprintf(line, sizeof(line), "X%03u Y%03u", state->x, state->y);
-        ESP_RETURN_ON_ERROR(draw_text(104, 166, line, COLOR_YELLOW, COLOR_BLACK, 2), TAG, "draw xy failed");
-        snprintf(line, sizeof(line), "P%u C%04d", state->points, count);
-        ESP_RETURN_ON_ERROR(draw_text(104, 194, line, COLOR_CYAN, COLOR_BLACK, 2), TAG, "draw points failed");
-    } else {
-        snprintf(line, sizeof(line), "NONE C%04d", count);
-        ESP_RETURN_ON_ERROR(draw_text(104, 180, line, COLOR_WHITE, COLOR_BLACK, 2), TAG, "draw none failed");
-    }
-
-    return ESP_OK;
 }
 
 static esp_err_t wifi_prepare(void)
@@ -497,17 +537,29 @@ static esp_err_t handle_tap(const touch_state_t *touch, app_screen_t *screen)
         return ESP_OK;
     }
 
-    if (hit_rect(touch, 12, 52, 92, 86)) {
-        *screen = SCREEN_APPS;
-        return draw_placeholder_screen("APPS", "SOFTWARE MENU", "COMING NEXT");
+    if (hit_rect(touch, 72, 54, 176, 70)) {
+        *screen = SCREEN_IMU;
+        return draw_placeholder_screen("IMU", "MPU6886 DEMO", "NEXT STEP");
     }
-    if (hit_rect(touch, 114, 52, 92, 86)) {
-        *screen = SCREEN_SETTINGS;
-        return draw_placeholder_screen("SET", "TIME THEME", "VOLUME WIFI");
+    if (hit_rect(touch, 20, 148, 44, 56)) {
+        *screen = SCREEN_IMAGE;
+        return draw_placeholder_screen("SD", "SD IMAGE APP", "CARD TEST LATER");
     }
-    if (hit_rect(touch, 216, 52, 92, 86)) {
+    if (hit_rect(touch, 79, 148, 44, 56)) {
         *screen = SCREEN_WIFI;
         return draw_wifi_scan_screen();
+    }
+    if (hit_rect(touch, 138, 148, 44, 56)) {
+        *screen = SCREEN_TIMER;
+        return draw_placeholder_screen("TIMER", "COUNTDOWN APP", "NEXT STEP");
+    }
+    if (hit_rect(touch, 197, 148, 44, 56)) {
+        *screen = SCREEN_SLEEP;
+        return draw_placeholder_screen("SLEEP", "LOW POWER APP", "NOT ENABLED");
+    }
+    if (hit_rect(touch, 256, 148, 44, 56)) {
+        *screen = SCREEN_SETTINGS;
+        return draw_placeholder_screen("SET", "TIME THEME", "VOLUME WIFI");
     }
 
     return ESP_OK;
@@ -545,19 +597,21 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(spi_bus_add_device(LCD_HOST, &dev_conf, &s_lcd));
     ESP_ERROR_CHECK(lcd_init());
-    ESP_ERROR_CHECK(draw_ui_shell());
+    ESP_ERROR_CHECK(draw_boot_check_screen());
     ESP_ERROR_CHECK(touch_init());
+    ESP_ERROR_CHECK(draw_status_row(132, "TOUCH", true));
+    bool psram_ok = check_psram_probe();
+    ESP_ERROR_CHECK(draw_status_row(160, "PSRAM", psram_ok));
+    ESP_ERROR_CHECK(draw_status_row(188, "WIFI", true));
+    vTaskDelay(pdMS_TO_TICKS(900));
+    ESP_ERROR_CHECK(draw_ui_shell());
 
     app_screen_t screen = SCREEN_HOME;
     bool was_pressed = false;
-    int count = 0;
     while (true) {
         touch_state_t touch;
         esp_err_t err = touch_read(&touch);
         if (err == ESP_OK) {
-            if (screen == SCREEN_HOME) {
-                ESP_ERROR_CHECK(draw_touch_status(&touch, count));
-            }
             if (touch.pressed) {
                 ESP_LOGI(TAG, "touch points=%u x=%u y=%u", touch.points, touch.x, touch.y);
             }
@@ -573,7 +627,6 @@ void app_main(void)
             }
         }
 
-        ++count;
         vTaskDelay(pdMS_TO_TICKS(50));
     }
 }

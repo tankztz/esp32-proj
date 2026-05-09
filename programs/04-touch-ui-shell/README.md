@@ -6,6 +6,13 @@ This program keeps the proven ILI9341 display setup from `03-display-hello` and
 adds a basic FT6X36-style touch probe using the manufacturer MicroPython
 reference code.
 
+The screen flow also uses the MIT-licensed M5Stack Core2 factory test as a
+behavior reference:
+
+```text
+references/M5-ProductExampleCodes/Core/M5Core2/Arduino/Core2_Factory_test
+```
+
 ## Hardware
 
 - LCD SPI: SCLK GPIO18, MOSI GPIO23, CS GPIO14, D/C GPIO27, RST GPIO33
@@ -16,9 +23,10 @@ reference code.
 ## Expected Behavior
 
 - Full 320x240 landscape UI shell.
-- Three menu tiles: `APPS`, `SET`, `WIFI`.
-- Live touch coordinate area at the bottom on the home screen.
-- Tapping `WIFI` runs a real Wi-Fi scan and shows nearby AP names/RSSI.
+- Startup factory-style check screen for LCD, touch, PSRAM, and Wi-Fi.
+- Main screen with a central `IMU` tile and bottom app row: `SD`, `WI`, `TM`,
+  `SL`, `ST`.
+- Tapping `WI` runs a real Wi-Fi scan and shows nearby AP names/RSSI.
 - Tapping the top bar from a sub-screen returns to the home screen.
 
 ## Build And Flash
