@@ -2,6 +2,12 @@
 
 Notes and future code for the connected ESP32 board.
 
+## Programs
+
+Each program lives in its own folder under `programs/`.
+
+- `programs/01-minimal-log` - smallest ESP-IDF app for checking build, flash, and UART logging.
+
 ## Current Board
 
 - USB serial: Silicon Labs CP210x USB to UART Bridge
@@ -19,6 +25,14 @@ Notes and future code for the connected ESP32 board.
 ```powershell
 uv run python -m esptool --port COM20 chip-id
 uv run python -m esptool --port COM20 flash-id
+```
+
+From inside an ESP-IDF program folder:
+
+```powershell
+idf.py set-target esp32
+idf.py build
+idf.py -p COM20 flash monitor
 ```
 
 ## Notes
