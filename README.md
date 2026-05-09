@@ -8,6 +8,7 @@ Each program lives in its own folder under `programs/`.
 
 - `programs/01-minimal-log` - smallest ESP-IDF app for checking build, flash, and UART logging.
 - `programs/02-sd-card-test` - SPI SD/TF card mount test using the likely board pins.
+- `programs/03-display-hello` - direct ILI9341 SPI display test with simple on-screen text.
 
 ## ESP-IDF Setup
 
