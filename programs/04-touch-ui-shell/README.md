@@ -17,8 +17,9 @@ reference code.
 
 - Full 320x240 landscape UI shell.
 - Three menu tiles: `APPS`, `SET`, `WIFI`.
-- Live touch coordinate area at the bottom.
-- Pressing the screen updates the coordinate readout and draws a small marker.
+- Live touch coordinate area at the bottom on the home screen.
+- Tapping `WIFI` runs a real Wi-Fi scan and shows nearby AP names/RSSI.
+- Tapping the top bar from a sub-screen returns to the home screen.
 
 ## Build And Flash
 
