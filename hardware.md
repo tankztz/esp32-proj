@@ -23,6 +23,18 @@ The running firmware initializes an LVGL display stack.
 - SCLK: GPIO18
 - MISO: unused
 - CS: GPIO14
+- D/C: GPIO27
+- Reset: GPIO33
+- Backlight: GPIO32
+- Tested MADCTL value for full-screen output: `0x08`
+- Tested drawing size with `MADCTL=0x08`: 320x240
+- Notes: ILI9341 native addressing behaves like 240x320, but this panel/module displays correctly when the app uses `MADCTL=0x08` and draws a 320x240 frame. Other common landscape values (`0x28`, `0x68`, `0xa8`, `0xe8`) produced rotation/mirroring issues or incomplete clearing during testing.
+
+## USB Serial
+
+- Normal recovered port after PnP re-enumeration: COM3
+- Earlier working port: COM20
+- If Windows lists a CP210x COM port but tools cannot open it with `FileNotFoundError`, see `docs/windows-serial-recovery.md`.
 
 ## Touch
 

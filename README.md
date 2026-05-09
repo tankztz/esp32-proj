@@ -10,6 +10,11 @@ Each program lives in its own folder under `programs/`.
 - `programs/02-sd-card-test` - SPI SD/TF card mount test using the likely board pins.
 - `programs/03-display-hello` - direct ILI9341 SPI display test with simple on-screen text.
 
+## Docs
+
+- `docs/windows-serial-recovery.md` - Windows CP210x COM port recovery notes.
+- `docs/original-firmware-feature-map.md` - extracted feature map for recreating the original Rubik Cube-1 firmware.
+
 ## ESP-IDF Setup
 
 ESP-IDF v6.0.1 is installed at:
@@ -27,7 +32,8 @@ Activate it in each new PowerShell session before building:
 ## Current Board
 
 - USB serial: Silicon Labs CP210x USB to UART Bridge
-- Working port: COM20
+- Current recovered USB serial port: COM3
+- Earlier working USB serial port: COM20
 - Chip: ESP32-D0WDQ6, revision v1.0
 - Flash: 16MB
 - PSRAM: 64Mbit / 8MB
@@ -39,8 +45,9 @@ Activate it in each new PowerShell session before building:
 ## Useful Commands
 
 ```powershell
-uv run python -m esptool --port COM20 chip-id
-uv run python -m esptool --port COM20 flash-id
+[System.IO.Ports.SerialPort]::GetPortNames()
+uv run python -m esptool --port COM3 chip-id
+uv run python -m esptool --port COM3 flash-id
 ```
 
 From inside an ESP-IDF program folder:
@@ -49,9 +56,9 @@ From inside an ESP-IDF program folder:
 . E:\Espressif\v6.0.1\esp-idf\export.ps1
 idf.py set-target esp32
 idf.py build
-idf.py -p COM20 flash monitor
+idf.py -p COM3 flash monitor
 ```
 
 ## Notes
 
-Use `COM20` for now. Device Manager may show a different stale COM name after changing ports, but the working Windows device link was confirmed as `COM20`.
+Use the current port from `[System.IO.Ports.SerialPort]::GetPortNames()`. If Windows lists the CP210x device but Python or ESP-IDF cannot open the COM port, follow `docs/windows-serial-recovery.md`.

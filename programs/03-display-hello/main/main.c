@@ -179,9 +179,14 @@ static esp_err_t draw_text(int x, int y, const char *text, uint16_t fg, uint16_t
     return ESP_OK;
 }
 
+static esp_err_t lcd_set_madctl(uint8_t madctl)
+{
+    return lcd_cmd_data(0x36, &madctl, 1);
+}
+
 static esp_err_t lcd_init(void)
 {
-    const uint8_t madctl = 0x28;
+    const uint8_t madctl = 0x08;
     const uint8_t pixfmt = 0x55;
     const uint8_t frctr1[] = {0x00, 0x18};
     const uint8_t dfunctr[] = {0x0a, 0x82, 0x27, 0x00};
@@ -196,7 +201,7 @@ static esp_err_t lcd_init(void)
     vTaskDelay(pdMS_TO_TICKS(120));
 
     ESP_RETURN_ON_ERROR(lcd_cmd_data(0x3a, &pixfmt, 1), TAG, "pixel format failed");
-    ESP_RETURN_ON_ERROR(lcd_cmd_data(0x36, &madctl, 1), TAG, "madctl failed");
+    ESP_RETURN_ON_ERROR(lcd_set_madctl(madctl), TAG, "madctl failed");
     ESP_RETURN_ON_ERROR(lcd_cmd_data(0xb1, frctr1, sizeof(frctr1)), TAG, "frame control failed");
     ESP_RETURN_ON_ERROR(lcd_cmd_data(0xb6, dfunctr, sizeof(dfunctr)), TAG, "display function failed");
     ESP_RETURN_ON_ERROR(lcd_cmd_data(0xc0, &pwctr1, 1), TAG, "power 1 failed");
@@ -246,19 +251,20 @@ void app_main(void)
 
     ESP_ERROR_CHECK(lcd_fill_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, COLOR_NAVY));
     ESP_ERROR_CHECK(lcd_fill_rect(0, 0, LCD_WIDTH, 34, COLOR_BLUE));
-    ESP_ERROR_CHECK(lcd_fill_rect(0, 206, LCD_WIDTH, 34, COLOR_GREEN));
-    ESP_ERROR_CHECK(lcd_fill_rect(16, 58, 288, 82, COLOR_BLACK));
-    ESP_ERROR_CHECK(lcd_fill_rect(20, 62, 280, 74, COLOR_CYAN));
-    ESP_ERROR_CHECK(draw_text(38, 78, "HELLO ESP32", COLOR_BLACK, COLOR_CYAN, 4));
-    ESP_ERROR_CHECK(draw_text(38, 150, "ILI9341 UI TEST", COLOR_WHITE, COLOR_NAVY, 2));
-    ESP_ERROR_CHECK(draw_text(38, 180, "COM20  320X240", COLOR_YELLOW, COLOR_NAVY, 2));
+    ESP_ERROR_CHECK(lcd_fill_rect(0, 202, LCD_WIDTH, 38, COLOR_GREEN));
+    ESP_ERROR_CHECK(lcd_fill_rect(20, 54, 280, 102, COLOR_BLACK));
+    ESP_ERROR_CHECK(lcd_fill_rect(24, 58, 272, 94, COLOR_CYAN));
+    ESP_ERROR_CHECK(draw_text(56, 76, "HELLO", COLOR_BLACK, COLOR_CYAN, 4));
+    ESP_ERROR_CHECK(draw_text(56, 112, "ESP32", COLOR_BLACK, COLOR_CYAN, 4));
+    ESP_ERROR_CHECK(draw_text(24, 172, "ILI9341 320X240", COLOR_WHITE, COLOR_NAVY, 2));
+    ESP_ERROR_CHECK(draw_text(24, 212, "STATUS", COLOR_BLACK, COLOR_GREEN, 2));
 
     int count = 0;
     while (true) {
         char buf[24];
         snprintf(buf, sizeof(buf), "COUNT %04d", count++);
-        ESP_ERROR_CHECK(lcd_fill_rect(38, 210, 160, 22, COLOR_GREEN));
-        ESP_ERROR_CHECK(draw_text(38, 210, buf, COLOR_BLACK, COLOR_GREEN, 2));
+        ESP_ERROR_CHECK(lcd_fill_rect(120, 212, 150, 22, COLOR_GREEN));
+        ESP_ERROR_CHECK(draw_text(120, 212, buf, COLOR_BLACK, COLOR_GREEN, 2));
         ESP_LOGI(TAG, "%s", buf);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }

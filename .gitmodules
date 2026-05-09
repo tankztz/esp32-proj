@@ -1,0 +1,4 @@
+[submodule "references/mcube-1-esp32-dev-board-mpy-code"]
+	path = references/mcube-1-esp32-dev-board-mpy-code
+	url = https://github.com/tankztz/mcube-1-esp32-dev-board-mpy-code.git
+	branch = main
