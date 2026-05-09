@@ -10,6 +10,7 @@ Each program lives in its own folder under `programs/`.
 - `programs/02-sd-card-test` - SPI SD/TF card mount test using the likely board pins.
 - `programs/03-display-hello` - direct ILI9341 SPI display test with simple on-screen text.
 - `programs/04-touch-ui-shell` - first rebuild UI shell with ILI9341 output and FT6X36 touch probing.
+- `programs/05-mimiclaw-port` - local ESP32-D0WDQ6 port probe of MimiClaw, built from the upstream ESP32-S3 project.
 
 ## Docs
 
@@ -61,6 +62,13 @@ From inside an ESP-IDF program folder:
 idf.py set-target esp32
 idf.py build
 idf.py -p COM3 flash monitor
+```
+
+MimiClaw port probe:
+
+```powershell
+. E:\Espressif\v6.0.1\esp-idf\export.ps1
+idf.py -p COM3 -C E:\GithubDesktop\esp32-proj\programs\05-mimiclaw-port flash monitor
 ```
 
 ## Notes

@@ -23,6 +23,13 @@ recreating the original board behavior.
     Wi-Fi scan UI, startup checks, settings, timer, SD card, touch, and IMU demo
     organization. This is not original Rubik Cube-1 firmware and the hardware
     pins are not copied directly.
+- `mimiclaw`
+  - Optional MimiClaw upstream reference submodule.
+  - Source: `https://github.com/memovai/mimiclaw`
+  - License: MIT.
+  - Upstream target: ESP32-S3 with 16MB flash and 8MB PSRAM.
+  - Local port attempt: `../programs/05-mimiclaw-port` targets this board's
+    ESP32-D0WDQ6, 16MB flash, 8MB SPI PSRAM, and CP210x UART.
 
 Clone with references:
 
@@ -46,4 +53,10 @@ The M5Stack Core2 factory-test reference source is:
 
 ```text
 https://github.com/m5stack/M5-ProductExampleCodes/tree/master/Core/M5Core2/Arduino/Core2_Factory_test
+```
+
+The MimiClaw reference source is:
+
+```text
+https://github.com/memovai/mimiclaw
 ```
