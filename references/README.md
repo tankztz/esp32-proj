@@ -11,6 +11,9 @@ recreating the original board behavior.
     original manufacturer information.
   - It is not required to build the ESP-IDF programs in `programs/`.
   - Mirrored under GitHub so GitHub users do not need to depend on Gitee.
+  - Current status: treat this as archived reference material. The original
+    company/manufacturer support appears inactive, the Gitee source can be slow
+    or difficult to access, and no newer official reference has been found.
 
 Clone with references:
 
