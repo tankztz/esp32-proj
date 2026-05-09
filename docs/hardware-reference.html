@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESP32 Board Hardware Reference</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #14213d;
+      --muted: #5c667a;
+      --line: #d8dee9;
+      --paper: #fbfcfe;
+      --panel: #ffffff;
+      --blue: #1769e0;
+      --cyan: #009bb0;
+      --green: #138a52;
+      --amber: #b26a00;
+      --red: #c2413a;
+      --dark: #1e293b;
+      --chip: #242832;
+      --shadow: 0 18px 45px rgba(20, 33, 61, 0.14);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #eef6ff 0, #fbfcfe 420px),
+        var(--paper);
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 28px 0 52px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
+      gap: 30px;
+      align-items: center;
+      min-height: 460px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 3px;
+      background: var(--blue);
+      border-radius: 2px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 720px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .fact {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.76);
+      border-radius: 8px;
+      padding: 14px 15px;
+      min-height: 84px;
+    }
+
+    .fact strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .fact span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .photo-card {
+      position: relative;
+      padding: 14px;
+      border: 1px solid rgba(20,33,61,0.08);
+      border-radius: 18px;
+      background: linear-gradient(150deg, #ffffff 0%, #eef4fb 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .device-photo {
+      display: block;
+      width: 100%;
+      aspect-ratio: 960 / 1280;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #e5e7eb;
+    }
+
+    .photo-caption {
+      margin: 12px 2px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    section {
+      margin-top: 42px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .section-title p {
+      margin: 0;
+      max-width: 620px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 18px;
+      box-shadow: 0 8px 28px rgba(20,33,61,0.07);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .card p, .card li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    code {
+      border: 1px solid #d7e0ea;
+      border-radius: 5px;
+      background: #f4f7fb;
+      padding: 1px 5px;
+      color: #0f3c7b;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.green { background: #e9f8ef; color: #0f6d3d; }
+    .tag.amber { background: #fff6df; color: #8a5600; }
+    .tag.red { background: #ffefef; color: #a8332d; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 28px rgba(20,33,61,0.06);
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e7edf5;
+      vertical-align: top;
+    }
+
+    th {
+      color: #334155;
+      background: #f3f7fb;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .pin-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .pin {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 72px;
+    }
+
+    .pin strong {
+      display: block;
+      margin-bottom: 4px;
+      font: 900 17px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .pin span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .warning {
+      border-left: 5px solid var(--amber);
+      background: #fffaf0;
+      border-radius: 8px;
+      padding: 16px 18px;
+      color: #5c3d00;
+    }
+
+    .footer {
+      margin-top: 42px;
+      padding: 22px 0 0;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      header { grid-template-columns: 1fr; min-height: 0; }
+      .quick-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pin-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      main { width: min(100% - 24px, 1180px); padding-top: 18px; }
+      h1 { font-size: 40px; }
+      .lead { font-size: 16px; }
+      .quick-facts, .grid, .pin-grid { grid-template-columns: 1fr; }
+      .section-title { display: block; }
+      .section-title p { margin-top: 8px; }
+      .photo-card { padding: 10px; }
+      th, td { padding: 10px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <div class="eyebrow">Board Reference</div>
+        <h1>2009 UP Ahead ESP32 Touch Board</h1>
+        <p class="lead">
+          A working hardware map for the ESP32-D0WDQ6 board recovered from
+          boot logs, firmware strings, manufacturer reference code, live tests,
+          and visual inspection. Treat it as an M5Stack Core2-style compatible
+          board with its own display pinout.
+        </p>
+        <div class="quick-facts">
+          <div class="fact"><strong>ESP32-D0WDQ6</strong><span>Classic dual-core Xtensa, not ESP32-C6</span></div>
+          <div class="fact"><strong>320 x 240</strong><span>ILI9341-compatible SPI display</span></div>
+          <div class="fact"><strong>16MB + 8MB</strong><span>Flash and PSRAM observed on board</span></div>
+          <div class="fact"><strong>Core2-like</strong><span>Similar architecture, different LCD pins</span></div>
+        </div>
+      </div>
+
+      <figure class="photo-card" aria-label="Device photo">
+        <img class="device-photo" src="assets/device-photo.jpg" alt="2009 UP Ahead ESP32 board inside its enclosure">
+        <figcaption class="photo-caption">
+          Device photo used as the hardware reference. The printed pin map and visible connectors are the source for the board notes below.
+        </figcaption>
+      </figure>
+    </header>
+
+    <section>
+      <div class="section-title">
+        <h2>Verified Hardware</h2>
+        <p>These are the values that have either been tested directly or are strongly supported by firmware and reference code.</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <h3>Core</h3>
+          <ul>
+            <li>MCU: <code>ESP32-D0WDQ6</code>, revision <code>v1.0</code></li>
+            <li>Wi-Fi, Bluetooth, dual core, 240MHz</li>
+            <li>Flash: 16MB, manufacturer <code>c8</code>, device <code>4018</code></li>
+            <li>PSRAM: 64Mbit / 8MB</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Display</h3>
+          <ul>
+            <li>ILI9341-compatible SPI TFT</li>
+            <li>Draw as <code>320x240</code></li>
+            <li>Use <code>MADCTL=0x08</code></li>
+            <li>SPI clock tested at 40MHz</li>
+          </ul>
+          <div class="tag-row">
+            <span class="tag green">Full screen verified</span>
+            <span class="tag amber">Not official Core2 pinout</span>
+          </div>
+        </article>
+        <article class="card">
+          <h3>Original Firmware</h3>
+          <ul>
+            <li>Project: <code>C001_Project</code></li>
+            <li>Product string: <code>Rubik Cube-1</code></li>
+            <li>ESP-IDF: <code>v4.2</code></li>
+            <li>Compile time: Feb 25 2021 15:55:36</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>Peripheral Pin Map</h2>
+        <p>Use this table first when writing new ESP-IDF programs for this board.</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Peripheral</th><th>Signal</th><th>GPIO</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>LCD</td><td>MOSI / SCLK / CS</td><td><code>23 / 18 / 14</code></td><td>Tested</td></tr>
+          <tr><td>LCD</td><td>D/C / Reset / Backlight</td><td><code>27 / 33 / 32</code></td><td>Tested</td></tr>
+          <tr><td>Touch</td><td>SDA / SCL</td><td><code>21 / 22</code></td><td>Firmware and reference code</td></tr>
+          <tr><td>Touch</td><td>I2C address / IRQ</td><td><code>0x38 / GPIO37</code></td><td>Reference code</td></tr>
+          <tr><td>microSD</td><td>MISO / MOSI / SCLK / CS</td><td><code>19 / 23 / 18 / 4</code></td><td>Reference code, partial test</td></tr>
+          <tr><td>IMU</td><td>MPU6886 I2C</td><td><code>21 / 22</code></td><td>Firmware and reference code</td></tr>
+          <tr><td>USB serial</td><td>CP210x bridge</td><td><code>GPIO1 / GPIO3</code></td><td>Observed</td></tr>
+          <tr><td>GPIO5 accessory</td><td>WS2812 or PWM speaker</td><td><code>5</code></td><td>Needs probing</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>Board Pin Labels</h2>
+        <p>The board's printed pin map near the expansion connector.</p>
+      </div>
+      <div class="pin-grid">
+        <div class="pin"><strong>G35</strong><span>ADC</span></div>
+        <div class="pin"><strong>G36</strong><span>ADC</span></div>
+        <div class="pin"><strong>G39</strong><span>ADC</span></div>
+        <div class="pin"><strong>G25</strong><span>DAC / SPK</span></div>
+        <div class="pin"><strong>G26</strong><span>DAC</span></div>
+        <div class="pin"><strong>G5</strong><span>GPIO</span></div>
+        <div class="pin"><strong>G2</strong><span>GPIO</span></div>
+        <div class="pin"><strong>G22</strong><span>SCL</span></div>
+        <div class="pin"><strong>G21</strong><span>SDA</span></div>
+        <div class="pin"><strong>G19</strong><span>MISO</span></div>
+        <div class="pin"><strong>G23</strong><span>MOSI</span></div>
+        <div class="pin"><strong>G18</strong><span>SCK</span></div>
+        <div class="pin"><strong>G3</strong><span>RXD0</span></div>
+        <div class="pin"><strong>G1</strong><span>TXD0</span></div>
+        <div class="pin"><strong>EN</strong><span>Reset / enable</span></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>M5Stack Core2 Comparison</h2>
+        <p>Useful for orientation, but the tested board pin map wins when there is a conflict.</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Function</th><th>This board</th><th>Official Core2 reference</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>LCD controller</td><td>ILI9341-compatible behavior</td><td>ILI9342C</td></tr>
+          <tr><td>LCD CS</td><td><code>GPIO14</code></td><td><code>GPIO5</code></td></tr>
+          <tr><td>LCD D/C</td><td><code>GPIO27</code></td><td><code>GPIO15</code></td></tr>
+          <tr><td>LCD reset</td><td><code>GPIO33</code></td><td>PMIC / AXP controlled</td></tr>
+          <tr><td>LCD backlight</td><td><code>GPIO32</code></td><td>PMIC / AXP controlled</td></tr>
+          <tr><td>LCD / SD MISO</td><td><code>GPIO19</code></td><td><code>GPIO38</code></td></tr>
+          <tr><td>Touch INT</td><td><code>GPIO37</code> in reference code</td><td><code>GPIO39</code></td></tr>
+          <tr><td>Touch I2C</td><td><code>GPIO21/22</code>, address <code>0x38</code></td><td><code>GPIO21/22</code>, FT6336U <code>0x38</code></td></tr>
+        </tbody>
+      </table>
+      <p class="warning">
+        M5Stack Core2 examples are useful for the UI model, IMU, touch, SD, and bus architecture,
+        but do not copy its LCD pin definitions directly onto this board.
+      </p>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>Rebuild Roadmap</h2>
+        <p>A practical sequence for recreating the original Rubik Cube-1 firmware in ESP-IDF.</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <h3>1. UI Shell</h3>
+          <p>Build a landscape 320x240 home screen, status bar, theme toggle, and menu tiles.</p>
+          <div class="tag-row"><span class="tag green">Display proven</span></div>
+        </article>
+        <article class="card">
+          <h3>2. Touch</h3>
+          <p>Read the FT6X36-compatible controller at <code>0x38</code>, calibrate coordinates, and wire a home gesture.</p>
+        </article>
+        <article class="card">
+          <h3>3. Settings</h3>
+          <p>Backlight brightness, time setting, Wi-Fi mode selection, and persistent preferences.</p>
+        </article>
+        <article class="card">
+          <h3>4. Wi-Fi</h3>
+          <p>Off, STA scan, SoftAP, and ESPTouch/SmartConfig like the original firmware strings indicate.</p>
+        </article>
+        <article class="card">
+          <h3>5. Files</h3>
+          <p>Mount SPI SD on CS <code>GPIO4</code>, list root files, and open simple text entries.</p>
+        </article>
+        <article class="card">
+          <h3>6. Sensors</h3>
+          <p>Show MPU6886 acceleration, gyro, and temperature. Probe GPIO5 accessory behavior separately.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>Developer Commands</h2>
+        <p>Known-good commands for this repository and board.</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Task</th><th>Command</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Find current COM port</td><td><code>[System.IO.Ports.SerialPort]::GetPortNames()</code></td></tr>
+          <tr><td>Activate ESP-IDF</td><td><code>. E:\Espressif\v6.0.1\esp-idf\export.ps1</code></td></tr>
+          <tr><td>Build and flash current program</td><td><code>idf.py -p COM3 flash</code></td></tr>
+          <tr><td>Clone references</td><td><code>git submodule update --init --recursive</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      Generated from repository notes in <code>HARDWARE.md</code>,
+      <code>docs/original-firmware-feature-map.md</code>, live ESP-IDF tests,
+      and M5Stack Core2 reference documentation. Last updated for this repo's
+      current hardware findings.
+    </div>
+  </main>
+</body>
+</html>

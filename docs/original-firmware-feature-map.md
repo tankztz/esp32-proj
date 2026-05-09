@@ -8,6 +8,7 @@ the MCube-1 MicroPython reference files.
 - `backups/C001_Project-factory-app.bin`
 - `backups/esp32-full-flash-16mb.bin`
 - `references/mcube-1-esp32-dev-board-mpy-code`
+- `HARDWARE.md`
 
 The original app image reports:
 

@@ -14,6 +14,7 @@ Each program lives in its own folder under `programs/`.
 
 - `docs/windows-serial-recovery.md` - Windows CP210x COM port recovery notes.
 - `docs/original-firmware-feature-map.md` - extracted feature map for recreating the original Rubik Cube-1 firmware.
+- `docs/hardware-reference.html` - visual hardware reference page for the board.
 
 ## ESP-IDF Setup
 
@@ -30,6 +31,8 @@ Activate it in each new PowerShell session before building:
 ```
 
 ## Current Board
+
+See `HARDWARE.md` for the detailed board notes.
 
 - USB serial: Silicon Labs CP210x USB to UART Bridge
 - Current recovered USB serial port: COM3
