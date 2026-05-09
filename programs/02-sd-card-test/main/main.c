@@ -17,7 +17,8 @@
 #define PIN_NUM_MISO 19
 #define PIN_NUM_MOSI 23
 #define PIN_NUM_CLK  18
-#define PIN_NUM_CS   4
+
+static const int CS_CANDIDATES[] = {4, 13, 15, 2, 5, 14, 25, 26, 27};
 
 static const char *TAG = "sd_card_test";
 
@@ -51,8 +52,8 @@ static void list_root_directory(void)
 void app_main(void)
 {
     ESP_LOGI(TAG, "SPI SD card test starting");
-    ESP_LOGI(TAG, "pins: CLK=%d MOSI=%d MISO=%d CS=%d",
-             PIN_NUM_CLK, PIN_NUM_MOSI, PIN_NUM_MISO, PIN_NUM_CS);
+    ESP_LOGI(TAG, "bus pins: CLK=%d MOSI=%d MISO=%d",
+             PIN_NUM_CLK, PIN_NUM_MOSI, PIN_NUM_MISO);
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
@@ -61,12 +62,16 @@ void app_main(void)
     };
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.max_freq_khz = 400;
+    host.max_freq_khz = 200;
 
     gpio_set_pull_mode(PIN_NUM_MISO, GPIO_PULLUP_ONLY);
     gpio_set_pull_mode(PIN_NUM_MOSI, GPIO_PULLUP_ONLY);
     gpio_set_pull_mode(PIN_NUM_CLK, GPIO_PULLUP_ONLY);
-    gpio_set_pull_mode(PIN_NUM_CS, GPIO_PULLUP_ONLY);
+    for (size_t i = 0; i < sizeof(CS_CANDIDATES) / sizeof(CS_CANDIDATES[0]); ++i) {
+        gpio_set_pull_mode(CS_CANDIDATES[i], GPIO_PULLUP_ONLY);
+        gpio_set_direction(CS_CANDIDATES[i], GPIO_MODE_OUTPUT);
+        gpio_set_level(CS_CANDIDATES[i], 1);
+    }
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_NUM_MOSI,
@@ -83,27 +88,37 @@ void app_main(void)
         return;
     }
 
-    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = PIN_NUM_CS;
-    slot_config.host_id = host.slot;
+    for (size_t i = 0; i < sizeof(CS_CANDIDATES) / sizeof(CS_CANDIDATES[0]); ++i) {
+        int cs = CS_CANDIDATES[i];
+        sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+        slot_config.gpio_cs = cs;
+        slot_config.host_id = host.slot;
 
-    sdmmc_card_t *card = NULL;
-    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &card);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "SD mount failed: %s", esp_err_to_name(ret));
-        ESP_LOGE(TAG, "check card insertion and pins; this test assumes CS=4 MISO=19");
+        ESP_LOGI(TAG, "trying SD card with CS=%d at %d kHz", cs, host.max_freq_khz);
+        sdmmc_card_t *card = NULL;
+        ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &card);
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "CS=%d failed: %s", cs, esp_err_to_name(ret));
+            vTaskDelay(pdMS_TO_TICKS(200));
+            continue;
+        }
+
+        ESP_LOGI(TAG, "SD card mounted at %s using CS=%d", MOUNT_POINT, cs);
+        sdmmc_card_print_info(stdout, card);
+        list_root_directory();
+
+        esp_vfs_fat_sdcard_unmount(MOUNT_POINT, card);
+        ESP_LOGI(TAG, "SD card unmounted");
         spi_bus_free(host.slot);
-        return;
+        goto done;
     }
 
-    ESP_LOGI(TAG, "SD card mounted at %s", MOUNT_POINT);
-    sdmmc_card_print_info(stdout, card);
-    list_root_directory();
-
-    esp_vfs_fat_sdcard_unmount(MOUNT_POINT, card);
+    ESP_LOGE(TAG, "no SD card mount worked; tried %u CS pins",
+             (unsigned)(sizeof(CS_CANDIDATES) / sizeof(CS_CANDIDATES[0])));
+    ESP_LOGE(TAG, "check card seating, slot wiring, MISO=19, and shared SPI bus wiring");
     spi_bus_free(host.slot);
-    ESP_LOGI(TAG, "SD card unmounted");
 
+done:
     while (true) {
         ESP_LOGI(TAG, "done");
         vTaskDelay(pdMS_TO_TICKS(5000));

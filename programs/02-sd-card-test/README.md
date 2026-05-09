@@ -2,12 +2,17 @@
 
 SPI SD/TF card probe for the board.
 
-Assumed pins:
+Known bus pins:
 
 - SCLK: GPIO18
 - MOSI: GPIO23
 - MISO: GPIO19
-- CS: GPIO4
+
+The app probes likely SD card CS pins at low SPI speed:
+
+```text
+4, 13, 15, 2, 5, 14, 25, 26, 27
+```
 
 The app mounts the card read-only in practice: it does not format, create, delete, or rename files. It prints card info and lists the root directory.
 
