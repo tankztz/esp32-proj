@@ -8,6 +8,20 @@ Each program lives in its own folder under `programs/`.
 
 - `programs/01-minimal-log` - smallest ESP-IDF app for checking build, flash, and UART logging.
 
+## ESP-IDF Setup
+
+ESP-IDF v6.0.1 is installed at:
+
+```text
+E:\Espressif\v6.0.1\esp-idf
+```
+
+Activate it in each new PowerShell session before building:
+
+```powershell
+. E:\Espressif\v6.0.1\esp-idf\export.ps1
+```
+
 ## Current Board
 
 - USB serial: Silicon Labs CP210x USB to UART Bridge
@@ -30,6 +44,7 @@ uv run python -m esptool --port COM20 flash-id
 From inside an ESP-IDF program folder:
 
 ```powershell
+. E:\Espressif\v6.0.1\esp-idf\export.ps1
 idf.py set-target esp32
 idf.py build
 idf.py -p COM20 flash monitor
