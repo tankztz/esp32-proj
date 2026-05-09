@@ -1,0 +1,22 @@
+# Build outputs
+build/
+dist/
+*.elf
+*.bin
+*.map
+
+# ESP-IDF local files
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+
+# Python/tooling
+.venv/
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
