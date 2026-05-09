@@ -76,6 +76,13 @@ static int cmd_set_tg_token(int argc, char **argv)
     return 0;
 }
 
+static int cmd_tg_debug(int argc, char **argv)
+{
+    esp_err_t err = telegram_debug_dump();
+    printf("tg_debug status: %s\n", esp_err_to_name(err));
+    return (err == ESP_OK) ? 0 : 1;
+}
+
 /* --- set_feishu_creds command --- */
 static struct {
     struct arg_str *app_id;
@@ -839,6 +846,14 @@ esp_err_t serial_cli_init(void)
         .argtable = &tg_token_args,
     };
     esp_console_cmd_register(&tg_token_cmd);
+
+    /* tg_debug */
+    esp_console_cmd_t tg_debug_cmd = {
+        .command = "tg_debug",
+        .help = "Debug Telegram bot getMe/getUpdates state",
+        .func = &cmd_tg_debug,
+    };
+    esp_console_cmd_register(&tg_debug_cmd);
 
     /* set_feishu_creds */
     feishu_creds_args.app_id = arg_str1(NULL, NULL, "<app_id>", "Feishu App ID");

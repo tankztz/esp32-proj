@@ -28,6 +28,8 @@ documented in `../../HARDWARE.md`:
   v6.0.1 target header set.
 - Enlarges the CLI config display buffer so long OpenAI project keys can be
   read back from NVS and shown masked.
+- Adds `tg_debug` for checking the saved Telegram token, current polling
+  offset, `getMe`, and pending `getUpdates` directly from the device.
 
 ## Build Probe
 

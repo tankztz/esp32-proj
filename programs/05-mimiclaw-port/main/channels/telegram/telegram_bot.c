@@ -561,3 +561,36 @@ esp_err_t telegram_set_token(const char *token)
     ESP_LOGI(TAG, "Telegram bot token saved");
     return ESP_OK;
 }
+
+esp_err_t telegram_debug_dump(void)
+{
+    printf("Telegram token loaded: %s (len=%d)\n",
+           s_bot_token[0] ? "yes" : "no", (int)strlen(s_bot_token));
+    printf("Telegram update offset: %" PRId64 "\n", s_update_offset);
+
+    if (s_bot_token[0] == '\0') {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    char *me = tg_api_call("getMe", NULL);
+    if (me) {
+        printf("getMe: %.512s%s\n", me, strlen(me) > 512 ? "..." : "");
+        free(me);
+    } else {
+        printf("getMe: no response\n");
+    }
+
+    char params[128];
+    snprintf(params, sizeof(params),
+             "getUpdates?offset=%" PRId64 "&timeout=0&limit=5",
+             s_update_offset);
+    char *updates = tg_api_call(params, NULL);
+    if (updates) {
+        printf("getUpdates: %.1024s%s\n", updates, strlen(updates) > 1024 ? "..." : "");
+        free(updates);
+    } else {
+        printf("getUpdates: no response\n");
+    }
+
+    return ESP_OK;
+}
